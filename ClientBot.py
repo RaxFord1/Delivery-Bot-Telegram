@@ -22,6 +22,7 @@ class ClientBot(Bot):
                                    password=self.dbPass, database=self.dbName)
         Bot.__init__(self, token)
 
+
     def start_message(self, message):
         markup = types.ReplyKeyboardMarkup(row_width=3)
         itembtn1 = types.KeyboardButton('Замовити')
@@ -113,7 +114,7 @@ class ClientBot(Bot):
         text = message.json["text"]
         markup = types.ReplyKeyboardMarkup()
         if text == 'Оформити замовлення':
-            self.send_message(message, "Введите дату и Час, когда хотите, чтобы пришёл заказ в формате YYYY:MM:DD:HH:MM",
+            self.send_message(message, "Введіть дату і Час, коли хочете, щоб прийшло замовлення. Формат: YYYY:MM:DD:HH:MM",
                               reply_markup=markup)
             self.bot.register_next_step_handler(message, self.choose_date)
         elif text == 'Замовити ще страву':
@@ -176,7 +177,7 @@ class ClientBot(Bot):
             self.add_time(self.maxorder(self.findid(message.chat.id)), given_time)
             if self.choose_agreement(message):
                 self.send_message(message,
-                                  "Хорошо. Тепер давай оберемо місце, куди прибуде замовлення. Напиши адресу",
+                                  "Добре. Тепер давай оберемо місце, куди прибуде замовлення. Напиши адресу",
                                   reply_markup=markup)
                 self.bot.register_next_step_handler(message, self.choose_place)
             else:
@@ -213,7 +214,7 @@ class ClientBot(Bot):
         itembtn6 = types.KeyboardButton('Відмінити замовлення')
         markup.add(itembtn1, itembtn2, itembtn3, itembtn4, itembtn5, itembtn6)
         self.send_message(message, txt, reply_markup=markup)
-        self.send_message(message, "Оформляем заказ?", reply_markup=markup)
+        self.send_message(message, "Оформлюємо замовлення?", reply_markup=markup)
         self.bot.register_next_step_handler(message, self.process_agreement)
 
     def process_agreement(self, message):
@@ -410,30 +411,21 @@ class ClientBot(Bot):
         orders = self.whatinorder(self.maxorder(self.findid(message.chat.id)))
         prices = []
         for i in orders:
-            print("num = ", i[2], "price = ", i[4])
             prices.append(LabeledPrice(label='{}'.format(i[1]), amount=int(i[2]) * int(i[4]) * 100))
             payload = "{}".format(i[3])
         prices.append(LabeledPrice(label='Доставка', amount=1))
 
         start_param = "pay"
-        print("chat_id", message.chat.id,
-              "title", "Еда",
-              "description", "Хочете ще більше смачної їжі?\n Тоді ми завжди вам раді!рады)",
-              "payload", payload,
-              "provider_token", self.payment_token,
-              "start_parameter", start_param,
-              "currency", "UAH",
-              "prices", prices)
+
         self.bot.send_invoice(
             message.chat.id,
-            title="Оплата еды",
-            description="Хотите замовлення ещё больше вкусной еды?\nТогда мы всегда вам рады)",
+            title="Сплата їжі",
+            description="Хочете більше смачної їжі?\nТоді ми завжди раді для вас)",
             invoice_payload=payload,
             provider_token=self.payment_token,
             start_parameter=start_param,
             currency="UAH",
             prices=prices
         )
-        self.send_message(message,
-                          'Оптатите чек, что бы получить заказ. Если не хотите оплачивать заказ, напишите /start и не оплачивайте заказ в будущем.\n')
+        self.send_message(message, 'Сплатите чек, щоб отримати замовлення. Якщо ви не хочете спрачувати замовлення, напишіть /start і не сплачуйте заказ у майбутньому.\n')
 
